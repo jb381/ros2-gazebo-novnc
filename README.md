@@ -8,7 +8,7 @@ This repository is optimized for:
 
 - Docker Desktop
 - Browser-based desktop at `http://localhost:6080`
-- Near zero setup: copy `.env`, build or pull, and you're running
+- Near zero setup: copy `.env`, build or pull, and you're running in under 60 seconds
 
 ## Compatibility
 
@@ -36,8 +36,6 @@ A pre-built image with TurtleBot3 is available on [GitHub Container Registry](ht
 
 ## Quick start
 
-### Option A: Build from source (Recommended)
-
 1. Copy `.env.example` to `.env` and adjust as needed:
 
    ```bash
@@ -53,45 +51,20 @@ A pre-built image with TurtleBot3 is available on [GitHub Container Registry](ht
 
    See [Configuration](#configuration) for all available variables.
 
-2. Build the image. The first build may take a while as it downloads and installs ROS 2, Gazebo, and any additional packages.
+### Option A: Build from source (Apple Silicon recommended)
 
-   ```bash
-   docker compose build
-   ```
-
-3. Start the container:
-
-   ```bash
-   docker compose up -d
-   ```
-
-4. Check status:
-
-   ```bash
-   docker compose ps
-   ```
-
-5. Open in browser:
-   - URL: `http://localhost:6080`
-   - VNC password: the value of `VNC_PASSWORD` (default: `ubuntu`)
-
-### Option B: Pre-built image (TurtleBot3)
-
-> For demonstration purposes. Build from source (Option A) is recommended for regular use.
-
-Pull and run without building:
+Build the image locally. The first build may take a while as it downloads and installs ROS 2, Gazebo, and any additional packages.
 
 ```bash
-docker pull ghcr.io/jb381/ros2-gazebo-novnc:1.0
+docker compose build
+docker compose up -d
 ```
 
-Create a `.env` file with your runtime settings:
+### Option B: Pre-built image (amd64 Linux / Windows recommended)
 
-```bash
-cp .env.example .env
-```
+On non-Apple-Silicon machines, pulling the pre-built image is more reliable and gets you running in under 60 seconds:
 
-Then create a minimal `docker-compose.override.yml` to use the pre-built image:
+Create a `docker-compose.override.yml` to use the pre-built image:
 
 ```bash
 echo 'services:
@@ -100,11 +73,23 @@ echo 'services:
     build: {}' > docker-compose.override.yml
 ```
 
-Start:
+Then start — Docker will pull the image automatically:
 
 ```bash
 docker compose up -d
 ```
+
+### After starting
+
+1. Check status:
+
+   ```bash
+   docker compose ps
+   ```
+
+2. Open in browser:
+   - URL: `http://localhost:6080`
+   - VNC password: the value of `VNC_PASSWORD` (default: `ubuntu`)
 
 ## Configuration
 
