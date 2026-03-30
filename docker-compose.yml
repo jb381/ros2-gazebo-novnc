@@ -9,7 +9,6 @@ services:
         WORKSPACE_REPOS: "${WORKSPACE_REPOS:-}"
     image: gazebo-ros2:jazzy
     container_name: gazebo-ros2
-    platform: linux/arm64
     restart: unless-stopped
     shm_size: "1gb"
     security_opt:

@@ -1,20 +1,22 @@
-# ROS 2 + Gazebo in Docker (noVNC, Apple Silicon)
+# ROS 2 + Gazebo in Docker (noVNC)
 
-Run ROS 2 Gazebo simulations in a fully containerized environment and access them through a browser desktop (noVNC). A TurtleBot3 configuration is provided in `.env.example` as a ready-to-use starting point.
+Run ROS 2 Gazebo simulations in a fully containerized environment and access them through a browser desktop (noVNC). No VM, no native ROS install — just Docker and a browser. A TurtleBot3 configuration is provided in `.env.example` as a ready-to-use starting point.
 
 ![TurtleBot3 Gazebo running in noVNC](screenshot.png)
 
 This repository is optimized for:
 
-- macOS on Apple Silicon (arm64)
 - Docker Desktop
 - Browser-based desktop at `http://localhost:6080`
+- Near zero setup: copy `.env`, build or pull, and you're running
 
 ## Compatibility
 
-- **Tested:** macOS Apple Silicon + Docker Desktop.
+This project was originally developed for macOS Apple Silicon — getting ROS 2 + Gazebo running natively on arm64 macOS can be a hassle, so this containerized setup solves that. It also bypasses the need for a virtual machine on Windows or any other platform where ROS 2 installation is complicated. It has since been tested and confirmed working on amd64 (Intel i5) Linux as well, and should work on any host with Docker.
+
+- **Tested:** macOS Apple Silicon (arm64) + Docker Desktop, Linux/amd64 (Intel i5) + Docker.
 - **Expected to work:** other operating systems with Docker, and Podman setups that support Compose (`podman compose` / `podman-compose`).
-- **Note:** this repo pins `platform: linux/arm64` for Apple Silicon. On non-arm64 hosts, adjust that setting if you want native architecture/performance.
+- **Apple Silicon users:** add `platform: linux/arm64` to the service in `docker-compose.yml` if you want to pin the architecture explicitly.
 - **Podman caveat:** depending on your Podman/rootless setup, you may need to remove `security_opt: seccomp=unconfined`.
 
 ## What this provides
@@ -30,8 +32,7 @@ A pre-built image with TurtleBot3 is available on [GitHub Container Registry](ht
 
 ## Prerequisites
 
-- Docker Desktop installed and running
-- Apple Silicon Mac recommended
+- Docker Desktop/Podman installed and running
 
 ## Quick start
 
@@ -120,10 +121,10 @@ All settings are configured via a `.env` file (copy from `.env.example`).
 
 ### Build settings (require `docker compose build`)
 
-| Variable              | Default     | Description                                                                                                                                            |
-| --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ADDITIONAL_PACKAGES` | *(empty)*   | Space-separated list of additional apt packages to install                                                                                             |
-| `WORKSPACE_REPOS`     | *(empty)*   | Space-separated list of git repositories to clone into the ROS 2 workspace. Append `#branch` to specify a branch. Defaults to `ROS_DISTRO` if omitted. |
+| Variable              | Default   | Description                                                                                                                                            |
+| --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ADDITIONAL_PACKAGES` | _(empty)_ | Space-separated list of additional apt packages to install                                                                                             |
+| `WORKSPACE_REPOS`     | _(empty)_ | Space-separated list of git repositories to clone into the ROS 2 workspace. Append `#branch` to specify a branch. Defaults to `ROS_DISTRO` if omitted. |
 
 > `.env.example` ships with TurtleBot3 values pre-filled as a ready-to-use starting point.
 
