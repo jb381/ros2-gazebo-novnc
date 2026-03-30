@@ -81,7 +81,7 @@ A pre-built image with TurtleBot3 is available on [GitHub Container Registry](ht
 Pull and run without building:
 
 ```bash
-docker pull ghcr.io/jb381/ros2-gazebo-novnc:latest
+docker pull ghcr.io/jb381/ros2-gazebo-novnc:1.0
 ```
 
 Create a `.env` file with your runtime settings:
@@ -95,7 +95,7 @@ Then create a minimal `docker-compose.override.yml` to use the pre-built image:
 ```bash
 echo 'services:
   gazebo-ros2:
-    image: ghcr.io/jb381/ros2-gazebo-novnc:latest
+    image: ghcr.io/jb381/ros2-gazebo-novnc:1.0
     build: {}' > docker-compose.override.yml
 ```
 
