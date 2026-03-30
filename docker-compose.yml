@@ -5,13 +5,24 @@ services:
       dockerfile: docker/Dockerfile
       args:
         ROS_DISTRO: jazzy
+        ADDITIONAL_PACKAGES: "${ADDITIONAL_PACKAGES:-}"
+        WORKSPACE_REPOS: "${WORKSPACE_REPOS:-}"
     image: gazebo-ros2:jazzy
     container_name: gazebo-ros2
     platform: linux/arm64
+    restart: unless-stopped
     shm_size: "1gb"
     security_opt:
       - seccomp=unconfined
     environment:
-      - VNC_GEOMETRY=1920x1080
+      - VNC_GEOMETRY=${VNC_GEOMETRY:-1920x1080}
+      - VNC_PASSWORD=${VNC_PASSWORD:-ubuntu}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-30}
     ports:
-      - "6080:80"
+      - "${PORT:-6080}:80"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3

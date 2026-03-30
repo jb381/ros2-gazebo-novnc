@@ -1,4 +1,10 @@
 workspace/
 .git/
+.gitignore
+.env
 .DS_Store
+screenshot.png
+LICENSE
+README.md
+
 

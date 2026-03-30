@@ -1,6 +1,6 @@
-# ROS 2 Jazzy + TurtleBot3 Gazebo in Docker (noVNC, Apple Silicon)
+# ROS 2 + Gazebo in Docker (noVNC, Apple Silicon)
 
-Run TurtleBot3 simulation in a fully containerized ROS 2 Jazzy environment and access it through a browser desktop (noVNC).
+Run ROS 2 Gazebo simulations in a fully containerized environment and access them through a browser desktop (noVNC). A TurtleBot3 configuration is provided in `.env.example` as a ready-to-use starting point.
 
 ![TurtleBot3 Gazebo running in noVNC](screenshot.png)
 
@@ -20,12 +20,13 @@ This repository is optimized for:
 ## What this provides
 
 - Ubuntu 24.04 + ROS 2 Jazzy
-- TurtleBot3 simulation packages
 - Gazebo + ROS bridge (`ros_gz`)
 - XFCE desktop over noVNC
-- TurtleBot3 simulation workspace cloned and built inside the image
+- Configurable simulation packages and workspace via `.env`
 
 No host ROS installation is required.
+
+A pre-built image with TurtleBot3 is available on [GitHub Container Registry](https://github.com/jb381/ros2-gazebo-novnc/pkgs/container/ros2-gazebo-novnc) for demonstration purposes. Building from source is recommended — it gives you full control over packages, robot configuration, and keeps the image up to date with your changes.
 
 ## Prerequisites
 
@@ -34,30 +35,116 @@ No host ROS installation is required.
 
 ## Quick start
 
-Build image:
+### Option A: Build from source (Recommended)
+
+1. Copy `.env.example` to `.env` and adjust as needed:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   The defaults in `.env.example` configure a TurtleBot3 setup. To run a bare ROS 2 + Gazebo environment instead, clear the build settings in `.env`:
+
+   ```bash
+   ADDITIONAL_PACKAGES=
+   WORKSPACE_REPOS=
+   ```
+
+   See [Configuration](#configuration) for all available variables.
+
+2. Build the image. The first build may take a while as it downloads and installs ROS 2, Gazebo, and any additional packages.
+
+   ```bash
+   docker compose build
+   ```
+
+3. Start the container:
+
+   ```bash
+   docker compose up -d
+   ```
+
+4. Check status:
+
+   ```bash
+   docker compose ps
+   ```
+
+5. Open in browser:
+   - URL: `http://localhost:6080`
+   - VNC password: the value of `VNC_PASSWORD` (default: `ubuntu`)
+
+### Option B: Pre-built image (TurtleBot3)
+
+> For demonstration purposes. Build from source (Option A) is recommended for regular use.
+
+Pull and run without building:
 
 ```bash
-docker compose build
+docker pull ghcr.io/jb381/ros2-gazebo-novnc:latest
 ```
 
-Start container:
+Create a `.env` file with your runtime settings:
+
+```bash
+cp .env.example .env
+```
+
+Then create a minimal `docker-compose.override.yml` to use the pre-built image:
+
+```bash
+echo 'services:
+  gazebo-ros2:
+    image: ghcr.io/jb381/ros2-gazebo-novnc:latest
+    build: {}' > docker-compose.override.yml
+```
+
+Start:
 
 ```bash
 docker compose up -d
 ```
 
-Check status:
+## Configuration
+
+All settings are configured via a `.env` file (copy from `.env.example`).
+
+### Runtime settings (no rebuild needed)
+
+| Variable        | Default     | Description               |
+| --------------- | ----------- | ------------------------- |
+| `VNC_PASSWORD`  | `ubuntu`    | Password for noVNC access |
+| `VNC_GEOMETRY`  | `1920x1080` | Desktop resolution        |
+| `ROS_DOMAIN_ID` | `30`        | ROS 2 DDS domain ID       |
+| `PORT`          | `6080`      | Host port for noVNC       |
+
+### Build settings (require `docker compose build`)
+
+| Variable              | Default     | Description                                                                                                                                            |
+| --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ADDITIONAL_PACKAGES` | *(empty)*   | Space-separated list of additional apt packages to install                                                                                             |
+| `WORKSPACE_REPOS`     | *(empty)*   | Space-separated list of git repositories to clone into the ROS 2 workspace. Append `#branch` to specify a branch. Defaults to `ROS_DISTRO` if omitted. |
+
+> `.env.example` ships with TurtleBot3 values pre-filled as a ready-to-use starting point.
+
+### Using a different robot
+
+Edit the build settings in your `.env` file:
 
 ```bash
-docker compose ps
+# Example: use a custom robot setup
+ADDITIONAL_PACKAGES=ros-jazzy-my-robot ros-jazzy-my-robot-sim
+WORKSPACE_REPOS=https://github.com/my-org/my_robot_simulations.git#main
 ```
 
-Open in browser:
+After changing build settings, rebuild:
 
-- URL: `http://localhost:6080`
-- VNC password: `ubuntu`
+```bash
+docker compose build --no-cache
+docker compose up -d
+```
 
-## Run simulation
+## Run simulation (TurtleBot3 example)
 
 Inside the noVNC desktop, open terminal #1 and run:
 
@@ -125,6 +212,8 @@ export TURTLEBOT3_MODEL=burger
 
 - This setup is intentionally minimal to reduce moving parts.
 - Direct VNC port exposure is disabled; use noVNC on port `6080`.
+- The container includes a health check that verifies noVNC is responding on port 80.
+- The container restarts automatically (`unless-stopped`) if it crashes.
 
 ## License
 
