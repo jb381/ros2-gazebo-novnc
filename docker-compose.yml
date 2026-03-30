@@ -1,0 +1,17 @@
+services:
+  gazebo-ros2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        ROS_DISTRO: jazzy
+    image: gazebo-ros2:jazzy
+    container_name: gazebo-ros2
+    platform: linux/arm64
+    shm_size: "1gb"
+    security_opt:
+      - seccomp=unconfined
+    environment:
+      - VNC_GEOMETRY=1920x1080
+    ports:
+      - "6080:80"
