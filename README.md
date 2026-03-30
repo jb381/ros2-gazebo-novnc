@@ -8,6 +8,7 @@ This repository is optimized for:
 
 - 🐳 Docker Desktop
 - 🖥️ Browser-based desktop at `http://localhost:6080`
+- 🔀 Multi-arch images (arm64 + amd64) — native performance on any host
 - ⚡ Near zero setup: copy `.env`, build or pull, and you're running in under 60 seconds
 
 ## Compatibility
@@ -16,6 +17,7 @@ This project was originally developed for macOS Apple Silicon — getting ROS 2 
 
 - **Tested:** macOS Apple Silicon (arm64) + Docker Desktop, Linux/amd64 (Intel i5) + Docker.
 - **Expected to work:** other operating systems with Docker, and Podman setups that support Compose (`podman compose` / `podman-compose`).
+- **No emulation overhead:** multi-arch images mean the container runs natively on both arm64 and amd64 hosts.
 - **Apple Silicon users:** add `platform: linux/arm64` to the service in `docker-compose.yml` if you want to pin the architecture explicitly.
 - **Podman caveat:** depending on your Podman/rootless setup, you may need to remove `security_opt: seccomp=unconfined`.
 
@@ -69,7 +71,7 @@ Create a `docker-compose.override.yml` to use the pre-built image:
 ```bash
 echo 'services:
   gazebo-ros2:
-    image: ghcr.io/jb381/ros2-gazebo-novnc:1.0
+    image: ghcr.io/jb381/ros2-gazebo-novnc:latest
     build: {}' > docker-compose.override.yml
 ```
 
