@@ -6,9 +6,9 @@ Run ROS 2 Gazebo simulations in a fully containerized environment and access the
 
 This repository is optimized for:
 
-- Docker Desktop
-- Browser-based desktop at `http://localhost:6080`
-- Near zero setup: copy `.env`, build or pull, and you're running in under 60 seconds
+- 🐳 Docker Desktop
+- 🖥️ Browser-based desktop at `http://localhost:6080`
+- ⚡ Near zero setup: copy `.env`, build or pull, and you're running in under 60 seconds
 
 ## Compatibility
 
@@ -51,7 +51,7 @@ A pre-built image with TurtleBot3 is available on [GitHub Container Registry](ht
 
    See [Configuration](#configuration) for all available variables.
 
-### Option A: Build from source (Apple Silicon recommended)
+### 🍎 Option A: Build from source (Apple Silicon recommended)
 
 Build the image locally. The first build may take a while as it downloads and installs ROS 2, Gazebo, and any additional packages.
 
@@ -60,7 +60,7 @@ docker compose build
 docker compose up -d
 ```
 
-### Option B: Pre-built image (amd64 Linux / Windows recommended)
+### 📦 Option B: Pre-built image (amd64 Linux / Windows recommended)
 
 On non-Apple-Silicon machines, pulling the pre-built image is more reliable and gets you running in under 60 seconds:
 
@@ -130,7 +130,7 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-## Run simulation (TurtleBot3 example)
+## 🐢 Run simulation (TurtleBot3 example)
 
 Inside the noVNC desktop, open terminal #1 and run:
 
@@ -170,7 +170,7 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### noVNC page shows "Failed to connect to server"
 
