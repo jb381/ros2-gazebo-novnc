@@ -18,6 +18,16 @@ jobs:
       contents: read
       packages: write
 
+    strategy:
+      matrix:
+        include:
+          - ros_distro: jazzy
+            base_image: ubuntu:24.04
+            tag_suffix: ""
+          - ros_distro: humble
+            base_image: ubuntu:22.04
+            tag_suffix: "-humble"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -25,7 +35,6 @@ jobs:
       - name: Load CI build config
         id: config
         run: |
-          # Source .env.ci for build args, with safe defaults
           ADDITIONAL_PACKAGES="${{ vars.ADDITIONAL_PACKAGES }}"
           WORKSPACE_REPOS="${{ vars.WORKSPACE_REPOS }}"
           if [ -z "${ADDITIONAL_PACKAGES}" ]; then
@@ -57,12 +66,13 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch,suffix=${{ matrix.tag_suffix }}
+            type=ref,event=pr,suffix=${{ matrix.tag_suffix }}
+            type=semver,pattern={{version}},suffix=${{ matrix.tag_suffix }}
+            type=semver,pattern={{major}}.{{minor}},suffix=${{ matrix.tag_suffix }}
+            type=sha,suffix=${{ matrix.tag_suffix }}
+            type=raw,value=${{ matrix.ros_distro }},enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ matrix.tag_suffix == '' && is_default_branch }}
 
       - name: Build and push
         uses: docker/build-push-action@v7
@@ -74,7 +84,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ROS_DISTRO=jazzy
+            BASE_IMAGE=${{ matrix.base_image }}
+            ROS_DISTRO=${{ matrix.ros_distro }}
             ADDITIONAL_PACKAGES=${{ steps.config.outputs.additional_packages }}
             WORKSPACE_REPOS=${{ steps.config.outputs.workspace_repos }}
           cache-from: type=gha

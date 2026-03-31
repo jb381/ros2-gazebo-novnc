@@ -21,16 +21,18 @@ This project was originally developed for macOS Apple Silicon — getting ROS 2 
 - **Apple Silicon users:** add `platform: linux/arm64` to the service in `docker-compose.yml` if you want to pin the architecture explicitly.
 - **Podman caveat:** depending on your Podman/rootless setup, you may need to remove `security_opt: seccomp=unconfined`.
 
-## What this provides
+## Available variants
 
-- Ubuntu 24.04 + ROS 2 Jazzy
-- Gazebo + ROS bridge (`ros_gz`)
-- XFCE desktop over noVNC
-- Configurable simulation packages and workspace via `.env`
+| Variant | Ubuntu | ROS 2 | Gazebo | Docker tag |
+| ------- | ------ | ----- | ------ | ---------- |
+| **Jazzy** (default) | 24.04 | Jazzy | Gazebo Harmonic | `:latest`, `:jazzy` |
+| **Humble** | 22.04 | Humble | Gazebo Fortress (Ignition) | `:humble` |
+
+Both variants include the ROS-Gazebo bridge (`ros_gz`), XFCE desktop over noVNC, and configurable simulation packages via `.env`.
 
 No host ROS installation is required.
 
-A pre-built image with TurtleBot3 is available on [GitHub Container Registry](https://github.com/jb381/ros2-gazebo-novnc/pkgs/container/ros2-gazebo-novnc) for demonstration purposes. Building from source is recommended — it gives you full control over packages, robot configuration, and keeps the image up to date with your changes.
+Pre-built images with TurtleBot3 are available on [GitHub Container Registry](https://github.com/jb381/ros2-gazebo-novnc/pkgs/container/ros2-gazebo-novnc). Building from source is recommended — it gives you full control over packages, robot configuration, and keeps the image up to date with your changes.
 
 ## Prerequisites
 
@@ -57,14 +59,25 @@ A pre-built image with TurtleBot3 is available on [GitHub Container Registry](ht
 
 Build the image locally. The first build may take a while as it downloads and installs ROS 2, Gazebo, and any additional packages.
 
+**Jazzy (default):**
+
 ```bash
 docker compose build
 docker compose up -d
 ```
 
+**Humble (Ubuntu 22.04 + Ignition Gazebo):**
+
+```bash
+docker compose --profile humble build
+docker compose --profile humble up -d
+```
+
 ### 📦 Option B: Pre-built image (amd64 Linux / Windows recommended)
 
-On non-Apple-Silicon machines, pulling the pre-built image is more reliable and gets you running in under 60 seconds:
+On non-Apple-Silicon machines, pulling the pre-built image is more reliable and gets you running in under 60 seconds.
+
+**Jazzy:**
 
 Create a `docker-compose.override.yml` to use the pre-built image:
 
@@ -75,10 +88,23 @@ echo 'services:
     build: {}' > docker-compose.override.yml
 ```
 
+**Humble:**
+
+```bash
+echo 'services:
+  gazebo-ros2-humble:
+    image: ghcr.io/jb381/ros2-gazebo-novnc:humble
+    build: {}' > docker-compose.override.yml
+```
+
 Then start — Docker will pull the image automatically:
 
 ```bash
+# Jazzy:
 docker compose up -d
+
+# Humble:
+docker compose --profile humble up -d
 ```
 
 ### After starting
@@ -90,7 +116,8 @@ docker compose up -d
    ```
 
 2. Open in browser:
-   - URL: `http://localhost:6080`
+   - Jazzy: `http://localhost:6080`
+   - Humble: `http://localhost:6081`
    - VNC password: the value of `VNC_PASSWORD` (default: `ubuntu`)
 
 ## Configuration
@@ -99,12 +126,13 @@ All settings are configured via a `.env` file (copy from `.env.example`).
 
 ### Runtime settings (no rebuild needed)
 
-| Variable        | Default     | Description               |
-| --------------- | ----------- | ------------------------- |
-| `VNC_PASSWORD`  | `ubuntu`    | Password for noVNC access |
-| `VNC_GEOMETRY`  | `1920x1080` | Desktop resolution        |
-| `ROS_DOMAIN_ID` | `30`        | ROS 2 DDS domain ID       |
-| `PORT`          | `6080`      | Host port for noVNC       |
+| Variable        | Default     | Description                             |
+| --------------- | ----------- | --------------------------------------- |
+| `VNC_PASSWORD`  | `ubuntu`    | Password for noVNC access               |
+| `VNC_GEOMETRY`  | `1920x1080` | Desktop resolution                      |
+| `ROS_DOMAIN_ID` | `30`        | ROS 2 DDS domain ID                     |
+| `PORT`          | `6080`      | Host port for noVNC (Jazzy)             |
+| `PORT_HUMBLE`   | `6081`      | Host port for noVNC (Humble, profile only) |
 
 ### Build settings (require `docker compose build`)
 
@@ -117,12 +145,16 @@ All settings are configured via a `.env` file (copy from `.env.example`).
 
 ### Using a different robot
 
-Edit the build settings in your `.env` file:
+Edit the build settings in your `.env` file. Make sure to match the ROS distro in package names:
 
 ```bash
-# Example: use a custom robot setup
+# Example: use a custom robot setup (Jazzy)
 ADDITIONAL_PACKAGES=ros-jazzy-my-robot ros-jazzy-my-robot-sim
 WORKSPACE_REPOS=https://github.com/my-org/my_robot_simulations.git#main
+
+# Example: use a custom robot setup (Humble)
+# ADDITIONAL_PACKAGES=ros-humble-my-robot ros-humble-my-robot-sim
+# WORKSPACE_REPOS=https://github.com/my-org/my_robot_simulations.git#main
 ```
 
 After changing build settings, rebuild:
@@ -155,21 +187,35 @@ ros2 run turtlebot3_teleop teleop_keyboard
 View logs:
 
 ```bash
+# Jazzy:
 docker compose logs --tail=200 gazebo-ros2
+
+# Humble:
+docker compose --profile humble logs --tail=200 gazebo-ros2-humble
 ```
 
 Stop:
 
 ```bash
+# Jazzy:
 docker compose down
+
+# Humble:
+docker compose --profile humble down
 ```
 
 Clean rebuild:
 
 ```bash
+# Jazzy:
 docker compose down
 docker compose build --no-cache
 docker compose up -d
+
+# Humble:
+docker compose --profile humble down
+docker compose --profile humble build --no-cache
+docker compose --profile humble up -d
 ```
 
 ## 🔧 Troubleshooting
@@ -185,6 +231,8 @@ docker compose down
 docker compose build --no-cache
 docker compose up -d
 ```
+
+For the Humble variant, replace the service name with `gazebo-ros2-humble` and add `--profile humble` to compose commands.
 
 ### Gazebo launches but teleop does nothing
 
