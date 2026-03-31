@@ -65,6 +65,7 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: latest=${{ matrix.ros_distro == 'jazzy' && 'auto' || 'false' }}
           tags: |
             type=ref,event=branch,suffix=${{ matrix.tag_suffix }}
             type=ref,event=pr,suffix=${{ matrix.tag_suffix }}
@@ -72,7 +73,6 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},suffix=${{ matrix.tag_suffix }}
             type=sha,suffix=${{ matrix.tag_suffix }}
             type=raw,value=${{ matrix.ros_distro }},enable={{is_default_branch}}
-            type=raw,value=latest,enable=${{ matrix.tag_suffix == '' && is_default_branch }}
 
       - name: Build and push
         uses: docker/build-push-action@v7
