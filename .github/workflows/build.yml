@@ -38,10 +38,10 @@ jobs:
           ADDITIONAL_PACKAGES="${{ vars.ADDITIONAL_PACKAGES }}"
           WORKSPACE_REPOS="${{ vars.WORKSPACE_REPOS }}"
           if [ -z "${ADDITIONAL_PACKAGES}" ]; then
-            ADDITIONAL_PACKAGES=$(grep '^ADDITIONAL_PACKAGES=' .env.ci | cut -d= -f2-)
+            ADDITIONAL_PACKAGES=$(grep '^ADDITIONAL_PACKAGES=' .env.ci.${{ matrix.ros_distro }} | cut -d= -f2-)
           fi
           if [ -z "${WORKSPACE_REPOS}" ]; then
-            WORKSPACE_REPOS=$(grep '^WORKSPACE_REPOS=' .env.ci | cut -d= -f2-)
+            WORKSPACE_REPOS=$(grep '^WORKSPACE_REPOS=' .env.ci.${{ matrix.ros_distro }} | cut -d= -f2-)
           fi
           echo "additional_packages=${ADDITIONAL_PACKAGES}" >> "$GITHUB_OUTPUT"
           echo "workspace_repos=${WORKSPACE_REPOS}" >> "$GITHUB_OUTPUT"
