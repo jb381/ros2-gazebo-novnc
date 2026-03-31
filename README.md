@@ -1,13 +1,13 @@
 # ROS 2 + Gazebo in Docker (noVNC)
 
-Run ROS 2 Gazebo simulations in a fully containerized environment and access them through a browser desktop (noVNC). No VM, no native ROS install — just Docker and a browser. A TurtleBot3 configuration is provided in `.env.example` as a ready-to-use starting point.
+Run ROS 2 Gazebo simulations in a fully containerized environment and access them through a browser desktop (noVNC). No VM, no native ROS install — just Docker and a browser.
 
 ![TurtleBot3 Gazebo running in noVNC](screenshot.png)
 
 This repository is optimized for:
 
 - 🐳 Docker Desktop
-- 🖥️ Browser-based desktop at `http://localhost:6080`
+- 🖥️ Browser-based desktop via noVNC
 - 🔀 Multi-arch images (arm64 + amd64) — native performance on any host
 - ⚡ Near zero setup: copy `.env`, build or pull, and you're running in under 60 seconds
 
@@ -25,18 +25,20 @@ This project was originally developed for macOS Apple Silicon — getting ROS 2 
 
 | Variant | Ubuntu | ROS 2 | Gazebo | Docker tag |
 | ------- | ------ | ----- | ------ | ---------- |
-| **Jazzy** (default) | 24.04 | Jazzy | Gazebo Harmonic | `:latest`, `:jazzy` |
-| **Humble** | 22.04 | Humble | Gazebo Fortress (Ignition) | `:humble` |
+| **Jazzy** (recommended) | 24.04 | Jazzy | Gazebo Harmonic | `:latest`, `:jazzy` |
+| Humble (alternative) | 22.04 | Humble | Classic Gazebo 11 | `:humble` |
 
-Both variants include the ROS-Gazebo bridge (`ros_gz`), XFCE desktop over noVNC, and configurable simulation packages via `.env`.
+**Jazzy (Ubuntu 24.04)** is the primary variant — fully tested with TurtleBot3 simulations, multi-arch CI, and everything working out of the box.
 
-No host ROS installation is required.
+**Humble (Ubuntu 22.04)** is provided as an alternative for users who need the older LTS. It includes TurtleBot3 simulations using classic Gazebo 11 (built from source during the image build).
 
-Pre-built images with TurtleBot3 are available on [GitHub Container Registry](https://github.com/jb381/ros2-gazebo-novnc/pkgs/container/ros2-gazebo-novnc). Building from source is recommended — it gives you full control over packages, robot configuration, and keeps the image up to date with your changes.
+Both variants include the ROS-Gazebo bridge, XFCE desktop over noVNC, and configurable packages. No host ROS installation is required.
+
+Pre-built images are available on [GitHub Container Registry](https://github.com/jb381/ros2-gazebo-novnc/pkgs/container/ros2-gazebo-novnc).
 
 ## Prerequisites
 
-- Docker Desktop/Podman installed and running
+- Docker Desktop / Podman installed and running
 
 ## Quick start
 
@@ -46,7 +48,7 @@ Pre-built images with TurtleBot3 are available on [GitHub Container Registry](ht
    cp .env.example .env
    ```
 
-   The defaults in `.env.example` configure a TurtleBot3 setup. To run a bare ROS 2 + Gazebo environment instead, clear the build settings in `.env`:
+   The defaults in `.env.example` configure a TurtleBot3 setup for Jazzy. To run a bare ROS 2 + Gazebo environment instead, clear the build settings in `.env`:
 
    ```bash
    ADDITIONAL_PACKAGES=
@@ -57,7 +59,7 @@ Pre-built images with TurtleBot3 are available on [GitHub Container Registry](ht
 
 ### 🍎 Option A: Build from source (Apple Silicon recommended)
 
-Build the image locally. The first build may take a while as it downloads and installs ROS 2, Gazebo, and any additional packages.
+The first build may take a while as it downloads and installs ROS 2, Gazebo, and any additional packages.
 
 **Jazzy (default):**
 
@@ -66,7 +68,7 @@ docker compose build
 docker compose up -d
 ```
 
-**Humble (Ubuntu 22.04 + Ignition Gazebo):**
+**Humble:**
 
 ```bash
 docker compose --profile humble build
@@ -75,11 +77,9 @@ docker compose --profile humble up -d
 
 ### 📦 Option B: Pre-built image (amd64 Linux / Windows recommended)
 
-On non-Apple-Silicon machines, pulling the pre-built image is more reliable and gets you running in under 60 seconds.
+Pulling the pre-built image gets you running in under 60 seconds. Create a `docker-compose.override.yml` to use it:
 
 **Jazzy:**
-
-Create a `docker-compose.override.yml` to use the pre-built image:
 
 ```bash
 echo 'services:
@@ -132,29 +132,33 @@ All settings are configured via a `.env` file (copy from `.env.example`).
 | `VNC_GEOMETRY`  | `1920x1080` | Desktop resolution                      |
 | `ROS_DOMAIN_ID` | `30`        | ROS 2 DDS domain ID                     |
 | `PORT`          | `6080`      | Host port for noVNC (Jazzy)             |
-| `PORT_HUMBLE`   | `6081`      | Host port for noVNC (Humble, profile only) |
+| `PORT_HUMBLE`   | `6081`      | Host port for noVNC (Humble)            |
 
 ### Build settings (require `docker compose build`)
 
-| Variable              | Default   | Description                                                                                                                                            |
-| --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ADDITIONAL_PACKAGES` | _(empty)_ | Space-separated list of additional apt packages to install                                                                                             |
-| `WORKSPACE_REPOS`     | _(empty)_ | Space-separated list of git repositories to clone into the ROS 2 workspace. Append `#branch` to specify a branch. Defaults to `ROS_DISTRO` if omitted. |
+Each variant uses its own set of build variables so they don't interfere with each other:
 
-> `.env.example` ships with TurtleBot3 values pre-filled as a ready-to-use starting point.
+| Variable                    | Default   | Description                                                                                                                                            |
+| --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ADDITIONAL_PACKAGES`       | _(empty)_ | Extra apt packages for the **Jazzy** build                                                                                                            |
+| `WORKSPACE_REPOS`           | _(empty)_ | Git repos to clone and build for **Jazzy**. Append `#branch` to specify a branch. Defaults to `ROS_DISTRO` if omitted.                                |
+| `ADDITIONAL_PACKAGES_HUMBLE` | _(empty)_ | Extra apt packages for the **Humble** build                                                                                                           |
+| `WORKSPACE_REPOS_HUMBLE`    | _(empty)_ | Git repos to clone and build for **Humble**. Append `#branch` to specify a branch. Defaults to `ROS_DISTRO` if omitted.                               |
+
+> `.env.example` ships with TurtleBot3 values pre-filled for Jazzy as a ready-to-use starting point.
 
 ### Using a different robot
 
 Edit the build settings in your `.env` file. Make sure to match the ROS distro in package names:
 
 ```bash
-# Example: use a custom robot setup (Jazzy)
+# Jazzy
 ADDITIONAL_PACKAGES=ros-jazzy-my-robot ros-jazzy-my-robot-sim
 WORKSPACE_REPOS=https://github.com/my-org/my_robot_simulations.git#main
 
-# Example: use a custom robot setup (Humble)
-# ADDITIONAL_PACKAGES=ros-humble-my-robot ros-humble-my-robot-sim
-# WORKSPACE_REPOS=https://github.com/my-org/my_robot_simulations.git#main
+# Humble
+ADDITIONAL_PACKAGES_HUMBLE=ros-humble-my-robot ros-humble-my-robot-sim
+WORKSPACE_REPOS_HUMBLE=https://github.com/my-org/my_robot_simulations.git#main
 ```
 
 After changing build settings, rebuild:
@@ -166,21 +170,21 @@ docker compose up -d
 
 ## 🐢 Run simulation (TurtleBot3 example)
 
-Inside the noVNC desktop, open terminal #1 and run:
+Both variants ship with TurtleBot3 pre-installed. Inside the noVNC desktop, open terminal #1 and run:
 
 ```bash
 export TURTLEBOT3_MODEL=burger
 ros2 launch turtlebot3_gazebo empty_world.launch.py
 ```
 
-Keep terminal #1 running.
-
-Open terminal #2 (also in noVNC) and run teleop:
+Keep terminal #1 running. Open terminal #2 (also in noVNC) and run teleop:
 
 ```bash
 export TURTLEBOT3_MODEL=burger
 ros2 run turtlebot3_teleop teleop_keyboard
 ```
+
+> **Note:** The Jazzy variant uses Gazebo Harmonic (`ros_gz` bridge). The Humble variant uses classic Gazebo 11 (`gazebo_ros_pkgs` built from source).
 
 ## Common commands
 
@@ -208,14 +212,10 @@ Clean rebuild:
 
 ```bash
 # Jazzy:
-docker compose down
-docker compose build --no-cache
-docker compose up -d
+docker compose down && docker compose build --no-cache && docker compose up -d
 
 # Humble:
-docker compose --profile humble down
-docker compose --profile humble build --no-cache
-docker compose --profile humble up -d
+docker compose --profile humble down && docker compose --profile humble build --no-cache && docker compose --profile humble up -d
 ```
 
 ## 🔧 Troubleshooting
@@ -236,9 +236,7 @@ For the Humble variant, replace the service name with `gazebo-ros2-humble` and a
 
 ### Gazebo launches but teleop does nothing
 
-Make sure teleop runs in a second terminal while launch is still active in terminal #1.
-
-Also verify:
+Make sure teleop runs in a second terminal while the simulation is still active in terminal #1. Also verify:
 
 ```bash
 export TURTLEBOT3_MODEL=burger
@@ -247,8 +245,8 @@ export TURTLEBOT3_MODEL=burger
 ## Notes
 
 - This setup is intentionally minimal to reduce moving parts.
-- Direct VNC port exposure is disabled; use noVNC on port `6080`.
-- The container includes a health check that verifies noVNC is responding on port 80.
+- Direct VNC port exposure is disabled; use noVNC (Jazzy: `6080`, Humble: `6081`).
+- The container includes a health check that verifies noVNC is responding.
 - The container restarts automatically (`unless-stopped`) if it crashes.
 
 ## License
