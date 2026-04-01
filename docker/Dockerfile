@@ -3,6 +3,7 @@ FROM ${BASE_IMAGE}
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG ROS_DISTRO=jazzy
+ARG ROS_GZ_PACKAGE=ros-gz
 ARG ADDITIONAL_PACKAGES=""
 ARG WORKSPACE_REPOS=""
 ARG BUILD_DATE
@@ -32,9 +33,14 @@ RUN apt-get update && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo ${UBUNTU_CODENAME}) main" \
       > /etc/apt/sources.list.d/ros2.list && \
     apt-get update && \
+    if [ -n "${ROS_GZ_PACKAGE}" ]; then \
+      GAZEBO_PKG="ros-${ROS_DISTRO}-${ROS_GZ_PACKAGE}"; \
+    else \
+      GAZEBO_PKG=""; \
+    fi && \
     apt-get install -y --no-install-recommends \
       ros-${ROS_DISTRO}-desktop \
-      ros-${ROS_DISTRO}-ros-gz \
+      ${GAZEBO_PKG} \
       build-essential \
       python3-colcon-common-extensions \
       git \

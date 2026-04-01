@@ -24,9 +24,11 @@ jobs:
           - ros_distro: jazzy
             base_image: ubuntu:24.04
             tag_suffix: ""
+            ros_gz_package: ros-gz
           - ros_distro: humble
             base_image: ubuntu:22.04
             tag_suffix: "-humble"
+            ros_gz_package: ""
 
     steps:
       - name: Checkout
@@ -86,6 +88,7 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             ROS_DISTRO=${{ matrix.ros_distro }}
+            ROS_GZ_PACKAGE=${{ matrix.ros_gz_package }}
             ADDITIONAL_PACKAGES=${{ steps.config.outputs.additional_packages }}
             WORKSPACE_REPOS=${{ steps.config.outputs.workspace_repos }}
           cache-from: type=gha
