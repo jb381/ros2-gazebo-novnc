@@ -18,9 +18,9 @@ services:
       - VNC_PASSWORD=${VNC_PASSWORD:-ubuntu}
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-30}
     ports:
-      - "${PORT:-6080}:80"
+      - "${PORT:-6080}:8080"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:80/"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/"]
       interval: 30s
       timeout: 5s
       start_period: 15s
