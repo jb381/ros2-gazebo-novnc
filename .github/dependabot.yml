@@ -10,6 +10,9 @@ updates:
     groups:
       docker-deps:
         patterns: ["*"]
+    ignore:
+      - dependency-name: "ubuntu"
+        versions: [">=26.04"]
     open-pull-requests-limit: 10
 
   - package-ecosystem: "github-actions"
